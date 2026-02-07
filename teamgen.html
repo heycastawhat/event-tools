@@ -14,38 +14,57 @@
         </header>
 
         <div class="card mb-4">
-            <h3 class="mb-2">Add Participants</h3>
-            <div class="flex gap-2">
-                <input type="text" id="nameInput" placeholder="Enter participant name" onkeypress="if(event.key === 'Enter') addParticipant()">
-                <button class="btn btn-primary" onclick="addParticipant()">Add</button>
+            <div class="flex items-center justify-between" onclick="toggleSection('participants')" style="cursor: pointer;">
+                <h3 style="margin: 0;">Add Participants <span class="text-muted text-sm">(<span id="participantCount">0</span>)</span></h3>
+                <span id="participantsIcon" class="text-muted">▼</span>
             </div>
-            <div id="participantList" class="mt-4 flex gap-2" style="flex-wrap: wrap;"></div>
-            <p class="text-muted text-sm mt-2"><span id="participantCount">0</span> participants added</p>
+            <div id="participantsContent" style="display: none;" class="mt-2">
+                <div class="flex items-center justify-between mb-2">
+                    <span></span>
+                    <button class="btn btn-ghost text-sm" onclick="event.stopPropagation(); toggleBulkMode()" id="bulkToggle">Bulk Add</button>
+                </div>
+                <div id="singleMode" class="flex gap-2">
+                    <input type="text" id="nameInput" placeholder="Enter participant name" onkeypress="if(event.key === 'Enter') addParticipant()">
+                    <button class="btn btn-primary" onclick="addParticipant()">Add</button>
+                </div>
+                <div id="bulkMode" style="display: none;">
+                    <textarea id="bulkInput" placeholder="Enter names, one per line" rows="5" style="width: 100%; resize: vertical;"></textarea>
+                    <button class="btn btn-primary mt-2" onclick="addBulkParticipants()" style="width: 100%;">Add All</button>
+                </div>
+                <div id="participantList" class="mt-4 flex gap-2" style="flex-wrap: wrap;"></div>
+            </div>
         </div>
 
         <div class="card mb-4">
-            <h3 class="mb-2">Team Settings</h3>
-            <div class="flex gap-4" style="flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 200px;">
-                    <label for="teamCount">Number of Teams</label>
-                    <input type="number" id="teamCount" value="2" min="2" max="20">
-                </div>
-                <div style="flex: 1; min-width: 200px;">
-                    <label for="teamNamePrefix">Team Name Prefix</label>
-                    <input type="text" id="teamNamePrefix" value="Team" placeholder="e.g., Team, Group">
+            <div class="flex items-center justify-between" onclick="toggleSection('settings')" style="cursor: pointer;">
+                <h3 style="margin: 0;">Team Settings</h3>
+                <span id="settingsIcon" class="text-muted">▼</span>
+            </div>
+            <div id="settingsContent" style="display: none;" class="mt-2">
+                <div class="flex gap-4" style="flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label for="teamCount">Number of Teams</label>
+                        <input type="number" id="teamCount" value="2" min="2" max="20">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label for="teamNamePrefix">Team Name Prefix</label>
+                        <input type="text" id="teamNamePrefix" value="Team" placeholder="e.g., Team, Group">
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="card mb-4">
-            <div class="flex items-center justify-between mb-2">
-                <h3 style="margin: 0;">No-Goes</h3>
-                <span class="text-muted text-sm"><span id="nogoCount">0</span> groups</span>
+            <div class="flex items-center justify-between" onclick="toggleSection('nogoes')" style="cursor: pointer;">
+                <h3 style="margin: 0;">No-Goes <span class="text-muted text-sm">(<span id="nogoCount">0</span>)</span></h3>
+                <span id="nogoesIcon" class="text-muted">▼</span>
             </div>
-            <p class="text-muted text-sm mb-2">People who shouldn't be on the same team</p>
-            <div id="nogoSelection" class="nogo-selection mb-2"></div>
-            <button class="btn btn-secondary" onclick="addNoGo()" style="width: 100%;">Add No-Go Group</button>
-            <div id="nogoList" class="mt-4 flex flex-col gap-2"></div>
+            <div id="nogoesContent" style="display: none;" class="mt-2">
+                <p class="text-muted text-sm mb-2">People who shouldn't be on the same team</p>
+                <div id="nogoSelection" class="nogo-selection mb-2"></div>
+                <button class="btn btn-secondary" onclick="addNoGo()" style="width: 100%;">Add No-Go Group</button>
+                <div id="nogoList" class="mt-4 flex flex-col gap-2"></div>
+            </div>
         </div>
 
         <div class="flex gap-2 mb-4">
@@ -164,6 +183,22 @@
     <script>
         let participants = [];
         let noGoes = [];
+        let bulkMode = false;
+
+        function toggleSection(section) {
+            const content = document.getElementById(section + 'Content');
+            const icon = document.getElementById(section + 'Icon');
+            const isHidden = content.style.display === 'none';
+            content.style.display = isHidden ? 'block' : 'none';
+            icon.textContent = isHidden ? '▲' : '▼';
+        }
+
+        function toggleBulkMode() {
+            bulkMode = !bulkMode;
+            document.getElementById('singleMode').style.display = bulkMode ? 'none' : 'flex';
+            document.getElementById('bulkMode').style.display = bulkMode ? 'block' : 'none';
+            document.getElementById('bulkToggle').textContent = bulkMode ? 'Single Add' : 'Bulk Add';
+        }
 
         function addParticipant() {
             const input = document.getElementById('nameInput');
@@ -175,6 +210,17 @@
                 input.value = '';
             }
             input.focus();
+        }
+
+        function addBulkParticipants() {
+            const textarea = document.getElementById('bulkInput');
+            const names = textarea.value.split('\n')
+                .map(n => n.trim())
+                .filter(n => n && !participants.includes(n));
+            
+            participants.push(...names);
+            updateParticipantDisplay();
+            textarea.value = '';
         }
 
         function removeParticipant(name) {

@@ -288,6 +288,7 @@
             localStorage.removeItem('eventToolsScoring');
             localStorage.removeItem('eventToolsSchedule');
             localStorage.removeItem('eventToolsPicker');
+            localStorage.removeItem('eventToolsParticipants');
             localStorage.removeItem('eventTools_onboarded');
             closeNewEventModal();
             startOnboarding();
@@ -544,6 +545,7 @@
             const input = document.getElementById('onboardPeople').value;
             const names = input.split('\n').map(n => n.trim()).filter(n => n);
             if (names.length > 0) {
+                localStorage.setItem('eventToolsParticipants', JSON.stringify(names));
                 const teamSize = Math.ceil(names.length / 4);
                 const shuffled = [...names].sort(() => Math.random() - 0.5);
                 const teams = [];

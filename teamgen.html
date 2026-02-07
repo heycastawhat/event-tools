@@ -218,6 +218,12 @@
         let noGoes = [];
         let bulkMode = false;
 
+        const savedParticipants = localStorage.getItem('eventToolsParticipants');
+        if (savedParticipants) {
+            participants = JSON.parse(savedParticipants);
+            updateParticipantDisplay();
+        }
+
         if (localStorage.getItem('eventTools_ai') === 'true') {
             document.getElementById('scanBtn').style.display = 'inline-block';
         }
@@ -277,6 +283,7 @@
             `).join('');
             
             count.textContent = participants.length;
+            localStorage.setItem('eventToolsParticipants', JSON.stringify(participants));
             updateNoGoSelects();
         }
 

@@ -187,6 +187,39 @@
     left: 25px;
     background: #fff;
 }
+
+.onboard-progress {
+    margin-bottom: 1.5rem;
+}
+
+.onboard-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.onboard-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--bg-tertiary);
+    transition: all var(--transition);
+}
+
+.onboard-dot.active {
+    background: var(--accent);
+    width: 24px;
+    border-radius: 4px;
+}
+
+.onboard-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
     .modal-options {
         display: flex;
         flex-direction: row;

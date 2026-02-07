@@ -20,9 +20,9 @@
             </div>
             <div id="participantsContent" style="display: none;" class="mt-2">
                 <div class="flex items-center justify-between mb-2">
-                    <span></span>
-                    <button class="btn btn-ghost text-sm" onclick="event.stopPropagation(); toggleBulkMode()" id="bulkToggle">Bulk Add</button>
-                </div>
+                                     <button class="btn btn-ghost text-sm" onclick="event.stopPropagation(); startOCR()">Scan Names</button>
+                                     <button class="btn btn-ghost text-sm" onclick="event.stopPropagation(); toggleBulkMode()" id="bulkToggle">Bulk Add</button>
+                                 </div>
                 <div id="singleMode" class="flex gap-2">
                     <input type="text" id="nameInput" placeholder="Enter participant name" onkeypress="if(event.key === 'Enter') addParticipant()">
                     <button class="btn btn-primary" onclick="addParticipant()">Add</button>
@@ -64,6 +64,37 @@
                 <div id="nogoSelection" class="nogo-selection mb-2"></div>
                 <button class="btn btn-secondary" onclick="addNoGo()" style="width: 100%;">Add No-Go Group</button>
                 <div id="nogoList" class="mt-4 flex flex-col gap-2"></div>
+            </div>
+        </div>
+
+        <div id="ocrModal" class="modal-overlay" style="display: none;">
+            <div class="modal-content" style="max-width: 450px;">
+                <div class="modal-title">Scan Names</div>
+                <div class="modal-text">Take a photo or upload an image of a list of names (whiteboard, register, sign-up sheet, etc.)</div>
+                <div id="ocrPreview" style="display: none; margin-bottom: 1rem;">
+                    <img id="ocrImage" style="max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border);">
+                </div>
+                <div id="ocrStatus" style="display: none; padding: 1rem; text-align: center;">
+                    <div class="text-muted">Reading names...</div>
+                </div>
+                <div id="ocrResults" style="display: none;">
+                    <label>Found these names:</label>
+                    <textarea id="ocrNames" rows="6" style="width: 100%; resize: vertical;"></textarea>
+                    <button class="btn btn-primary mt-2" onclick="addOCRNames()" style="width: 100%;">Add All</button>
+                </div>
+                <div id="ocrCamera" style="display: none; margin-bottom: 1rem;">
+                    <video id="ocrVideo" autoplay playsinline style="width: 100%; border-radius: var(--radius-md); border: 1px solid var(--border);"></video>
+                    <canvas id="ocrCanvas" style="display: none;"></canvas>
+                    <button class="btn btn-primary mt-2" onclick="capturePhoto()" style="width: 100%;">Take Photo</button>
+                </div>
+                <div id="ocrInput" class="flex gap-2">
+                    <button class="btn btn-primary" onclick="openCamera()" style="flex: 1;">Camera</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('ocrFile').click()" style="flex: 1;">Upload</button>
+                </div>
+                <input type="file" id="ocrFile" accept="image/*" style="display: none;" onchange="handleOCRFile(event)">
+                <div class="modal-buttons" style="margin-top: 1rem;">
+                    <button class="btn btn-ghost" onclick="closeOCR()">Close</button>
+                </div>
             </div>
         </div>
 
@@ -379,6 +410,124 @@
             updateParticipantDisplay();
             updateNoGoDisplay();
             document.getElementById('teamsOutput').innerHTML = '';
+        }
+
+        let ocrStream = null;
+
+        function startOCR() {
+            document.getElementById('ocrModal').style.display = 'flex';
+            document.getElementById('ocrPreview').style.display = 'none';
+            document.getElementById('ocrCamera').style.display = 'none';
+            document.getElementById('ocrStatus').style.display = 'none';
+            document.getElementById('ocrResults').style.display = 'none';
+            document.getElementById('ocrInput').style.display = 'flex';
+        }
+
+        function closeOCR() {
+            stopCamera();
+            document.getElementById('ocrModal').style.display = 'none';
+        }
+
+        async function openCamera() {
+            try {
+                ocrStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' }
+                });
+                const video = document.getElementById('ocrVideo');
+                video.srcObject = ocrStream;
+                document.getElementById('ocrCamera').style.display = 'block';
+                document.getElementById('ocrInput').style.display = 'none';
+            } catch (err) {
+                alert('Could not access camera: ' + err.message);
+            }
+        }
+
+        function stopCamera() {
+            if (ocrStream) {
+                ocrStream.getTracks().forEach(t => t.stop());
+                ocrStream = null;
+            }
+            document.getElementById('ocrVideo').srcObject = null;
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('ocrVideo');
+            const canvas = document.getElementById('ocrCanvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            const base64 = canvas.toDataURL('image/jpeg', 0.8);
+            stopCamera();
+            document.getElementById('ocrCamera').style.display = 'none';
+            processOCRImage(base64);
+        }
+
+        function handleOCRFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => processOCRImage(e.target.result);
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
+
+        async function processOCRImage(base64) {
+            document.getElementById('ocrImage').src = base64;
+            document.getElementById('ocrPreview').style.display = 'block';
+            document.getElementById('ocrInput').style.display = 'none';
+            document.getElementById('ocrStatus').style.display = 'block';
+            document.getElementById('ocrStatus').innerHTML = '<div class="text-muted">Reading names...</div>';
+            document.getElementById('ocrResults').style.display = 'none';
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'openai/gpt-5-mini',
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: 'Extract all people\'s names from this image. Return ONLY the names, one per line. No numbering, no extra text, no explanations. If you cannot find names, return "NO_NAMES_FOUND".'
+                                },
+                                {
+                                    type: 'image_url',
+                                    image_url: { url: base64 }
+                                }
+                            ]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                const text = data.choices[0].message.content.trim();
+
+                document.getElementById('ocrStatus').style.display = 'none';
+
+                if (text === 'NO_NAMES_FOUND') {
+                    document.getElementById('ocrStatus').style.display = 'block';
+                    document.getElementById('ocrStatus').innerHTML = '<div style="color: var(--error);">No names found. Try a clearer image.</div>';
+                    document.getElementById('ocrInput').style.display = 'flex';
+                } else {
+                    document.getElementById('ocrNames').value = text;
+                    document.getElementById('ocrResults').style.display = 'block';
+                }
+            } catch (err) {
+                document.getElementById('ocrStatus').innerHTML = `<div style="color: var(--error);">Error: ${err.message}</div>`;
+                document.getElementById('ocrInput').style.display = 'flex';
+            }
+        }
+
+        function addOCRNames() {
+            const names = document.getElementById('ocrNames').value
+                .split('\n')
+                .map(n => n.trim())
+                .filter(n => n && !participants.includes(n));
+            participants.push(...names);
+            updateParticipantDisplay();
+            closeOCR();
         }
     </script>
 </body>

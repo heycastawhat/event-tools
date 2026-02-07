@@ -29,6 +29,7 @@
         <div id="scoreboard" class="scoreboard-grid"></div>
 
         <div id="actionsBar" class="actions-bar" style="display: none;">
+            <button class="btn btn-ghost action-btn" id="undoBtn" onclick="undo()" style="display: none;">↩ Undo</button>
             <button class="btn btn-primary action-btn" onclick="addRound()">+ Round</button>
             <button class="btn btn-secondary action-btn" id="removeRoundBtn" onclick="removeRound()">− Round</button>
             <button class="btn btn-secondary action-btn" onclick="resetScores()">Reset</button>
@@ -182,6 +183,29 @@
     <script>
         let teams = [];
         let rounds = 0;
+        let undoStack = [];
+        const MAX_UNDO = 20;
+
+        function saveState() {
+            undoStack.push(JSON.stringify({ teams: JSON.parse(JSON.stringify(teams)), rounds }));
+            if (undoStack.length > MAX_UNDO) undoStack.shift();
+            updateUndoButton();
+        }
+
+        function undo() {
+            if (undoStack.length === 0) return;
+            const state = JSON.parse(undoStack.pop());
+            teams = state.teams;
+            rounds = state.rounds;
+            save();
+            render();
+            updateUndoButton();
+        }
+
+        function updateUndoButton() {
+            const btn = document.getElementById('undoBtn');
+            if (btn) btn.style.display = undoStack.length > 0 ? 'block' : 'none';
+        }
 
         function init() {
             const saved = localStorage.getItem('eventToolsScoring');
@@ -214,6 +238,7 @@
         }
 
         function addTeam() {
+            saveState();
             teams.push({
                 name: `Team ${teams.length + 1}`,
                 scores: Array(rounds).fill(0)
@@ -224,6 +249,7 @@
 
         function removeTeam(index) {
             if (confirm(`Remove ${teams[index].name}?`)) {
+                saveState();
                 teams.splice(index, 1);
                 save();
                 render();
@@ -231,17 +257,20 @@
         }
 
         function updateTeamName(index, name) {
+            saveState();
             teams[index].name = name;
             save();
         }
 
         function updateScore(teamIndex, roundIndex, value) {
+            saveState();
             teams[teamIndex].scores[roundIndex] = parseInt(value) || 0;
             save();
             render();
         }
 
         function addRound() {
+            saveState();
             rounds++;
             teams.forEach(team => team.scores.push(0));
             save();
@@ -250,6 +279,7 @@
 
         function removeRound() {
             if (rounds > 0) {
+                saveState();
                 rounds--;
                 teams.forEach(team => team.scores.pop());
                 save();
@@ -259,6 +289,7 @@
 
         function resetScores() {
             if (confirm('Reset all scores to 0?')) {
+                saveState();
                 teams.forEach(team => {
                     team.scores = team.scores.map(() => 0);
                 });

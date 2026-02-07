@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Event Tools</title>
+</head>
+<body>
+    <div class="container flex flex-col items-center" style="justify-content: center; min-height: 100vh;">
+        <h1>Event tools</h1>
+        <p class="text-muted mb-4">Tools for events</p>
+        <div class="flex gap-2" style="flex-wrap: wrap; justify-content: center;">
+            <button class="btn btn-primary" onclick="window.location.href='teamgen.html'">Team Generator</button>
+            <button class="btn btn-primary" onclick="window.location.href='scoring.html'">Scoring</button>
+            <button class="btn btn-primary" onclick="window.location.href='timer.html'">Timer</button>
+        </div>
+        <button class="btn btn-secondary mt-4" onclick="playAttention()" style="padding: 1rem 2rem;">
+            Attention
+        </button>
+    </div>
+
+    <script>
+        function playAttention() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'sine';
+                    
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                }, i * 400);
+            }
+            
+            if (navigator.vibrate) {
+                navigator.vibrate([200, 100, 200, 100, 200]);
+            }
+        }
+    </script>
+</body>
+</html>

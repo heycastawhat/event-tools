@@ -1,3 +1,183 @@
+/* Custom Modal (teamgen style) */
+.custom-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: all;
+}
+        display: none;
+    .custom-modal {
+        height: 100dvh;
+        min-height: 100dvh;
+    }
+}
+.custom-modal-backdrop {
+    position: absolute;
+        display: none !important;
+    background: rgba(13,17,23,0.85);
+    z-index: 1;
+}
+.custom-modal-content {
+    position: relative;
+    z-index: 2;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    padding: 2rem 2.5rem 1.5rem 2.5rem;
+    min-width: 280px;
+    max-width: 90vw;
+    color: var(--text-primary);
+        padding: 0;
+    animation: modalPop 0.18s cubic-bezier(.4,1.4,.6,1);
+}
+@keyframes modalPop {
+    0% { transform: scale(0.92) translateY(30px); opacity: 0; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+.hamburger-menu.left {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 100;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.modal-content {
+    background: var(--bg-secondary);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    animation: modalIn 0.3s ease-out;
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.modal-text {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+.modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+    .modal-options {
+        display: flex;
+        flex-direction: row;
+        gap: 0.75rem;
+        justify-content: center;
+    }
+    .modal-option {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem 1.25rem;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all var(--transition);
+        text-align: center;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+    .modal-option:hover {
+        border-color: var(--accent);
+        background: var(--accent-subtle);
+    }
+    .modal-option-title {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0;
+    }
+    .modal-option-title[style*="color: var(--error)"] {
+        color: var(--error) !important;
+    }
+.hamburger-btn {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    line-height: 1;
+}
+.sidebar-menu {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 170px;
+    max-width: 60vw;
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border-color);
+    box-shadow: 2px 0 12px rgba(0,0,0,0.2);
+    padding-top: 3.5rem;
+    z-index: 200;
+    border-radius: 0 12px 12px 0;
+    transform: translateX(-110%);
+    transition: transform 0.22s cubic-bezier(.4,1.4,.6,1);
+    pointer-events: none;
+    opacity: 0.98;
+}
+.sidebar-menu.open {
+    transform: translateX(0);
+    pointer-events: auto;
+    opacity: 1;
+}
+.sidebar-menu .sidebar-item {
+    display: block;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+@media (max-width: 700px) {
+    .sidebar-menu {
+        width: 70vw;
+        max-width: 90vw;
+        border-radius: 0 18px 18px 0;
+    }
+}
 /* CSS Variables for Dark Mode */
 :root {
     --bg-primary: #0d1117;

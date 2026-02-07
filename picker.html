@@ -7,27 +7,6 @@
     <title>Random Picker - Event Tools</title>
 </head>
 <body>
-    <div id="startupModal" class="modal-overlay">
-        <div class="modal">
-            <h2 style="margin-bottom: 0.5rem;">What do you want to pick from?</h2>
-            <p class="text-muted text-sm mb-4">Choose your data source</p>
-            <div class="modal-options">
-                <button class="modal-option" onclick="selectSource('teamgen-people')">
-                    <span class="modal-option-title">People from Team Generator</span>
-                    <span class="modal-option-desc">All participants you've added</span>
-                </button>
-                <button class="modal-option" onclick="selectSource('teamgen-teams')">
-                    <span class="modal-option-title">Teams from Team Generator</span>
-                    <span class="modal-option-desc">Pick a random team</span>
-                </button>
-                <button class="modal-option" onclick="selectSource('manual')">
-                    <span class="modal-option-title">Enter Manually</span>
-                    <span class="modal-option-desc">Type in your own list</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
     <div class="container" style="padding: 1rem; max-width: 600px;">
         <header class="flex items-center justify-between mb-4">
             <h1 style="font-size: 1.5rem;">Random Picker</h1>
@@ -39,13 +18,27 @@
             <button class="mode-btn" id="teamsMode" onclick="setMode('teams')">Teams</button>
         </div>
 
+        <div id="welcomeModal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-title">Welcome to Random Picker</div>
+                <div class="modal-text">Where would you like to get your people from?</div>
+                <div class="modal-buttons">
+                    <button class="btn btn-primary" onclick="useTeamGenData()">Use Team Generator</button>
+                    <button class="btn btn-secondary" onclick="useManualEntry()">Enter Manually</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="alertDisplay" class="alert-display" style="display: none;">
+            <div class="alert-text" id="alertText"></div>
+        </div>
+
         <div id="resultDisplay" class="result-display">
             <div class="result-label">Tap Pick to start</div>
             <div class="result-name" id="resultName">?</div>
         </div>
 
-        <button class="pick-btn" id="pickBtn" onclick="pick()">Spin the "wheel"</button>
-        <button class="remove-picked-btn" id="removeBtn" onclick="removeCurrentPick()" style="display: none;">Remove from Pool</button>
+        <button class="pick-btn" id="pickBtn" onclick="pick()">Spin the Wheel</button>
 
         <div class="card mt-4">
             <div class="flex items-center justify-between" onclick="toggleOptions()" style="cursor: pointer;">
@@ -173,6 +166,76 @@
             color: var(--success);
         }
         
+        .alert-display {
+            background: var(--bg-secondary);
+            border: 2px solid var(--error);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            animation: shake 0.5s ease-out;
+        }
+        
+        .alert-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--error);
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+        
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            animation: modalIn 0.3s ease-out;
+        }
+        
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .modal-text {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
         .pick-btn {
             width: 100%;
             padding: 1.25rem;
@@ -197,24 +260,6 @@
         
         .pick-btn:active {
             transform: scale(0.98);
-        }
-        
-        .remove-picked-btn {
-            width: 100%;
-            padding: 0.75rem;
-            margin-top: 0.5rem;
-            font-size: 1rem;
-            font-weight: 500;
-            background: var(--bg-tertiary);
-            color: var(--error);
-            border: 1px solid var(--error);
-            border-radius: var(--radius-lg);
-            cursor: pointer;
-            transition: all var(--transition);
-        }
-        
-        .remove-picked-btn:hover {
-            background: rgba(248, 81, 73, 0.15);
         }
         
         .pool-list {
@@ -270,106 +315,24 @@
         .history-name {
             font-weight: 500;
         }
-        
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: 1rem;
-        }
-        
-        .modal-overlay.hidden {
-            display: none;
-        }
-        
-        .modal {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            max-width: 400px;
-            width: 100%;
-        }
-        
-        .modal-options {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-        
-        .modal-option {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 1rem;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            cursor: pointer;
-            transition: all var(--transition);
-            text-align: left;
-        }
-        
-        .modal-option:hover {
-            border-color: var(--accent);
-            background: var(--accent-subtle);
-        }
-        
-        .modal-option-title {
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 0.25rem;
-        }
-        
-        .modal-option-desc {
-            font-size: 0.875rem;
-            color: var(--text-muted);
-        }
     </style>
 
     <script>
         let mode = 'people';
         let pool = [];
         let originalPool = [];
+        let peoplePool = [];
+        let peopleOriginalPool = [];
         let history = [];
         let isSpinning = false;
-        let currentWinner = null;
-
-        function selectSource(source) {
-            document.getElementById('startupModal').classList.add('hidden');
-            
-            if (source === 'teamgen-people') {
-                mode = 'people';
-                document.getElementById('peopleMode').classList.add('active');
-                document.getElementById('teamsMode').classList.remove('active');
-                document.getElementById('useTeamGen').checked = true;
-                document.getElementById('manualEntry').style.display = 'none';
-                loadFromTeamGen();
-            } else if (source === 'teamgen-teams') {
-                mode = 'teams';
-                document.getElementById('teamsMode').classList.add('active');
-                document.getElementById('peopleMode').classList.remove('active');
-                document.getElementById('peopleOptions').style.display = 'none';
-                document.getElementById('teamsOptions').style.display = 'block';
-                loadTeams();
-            } else {
-                mode = 'people';
-                document.getElementById('peopleMode').classList.add('active');
-                document.getElementById('teamsMode').classList.remove('active');
-                // Open options panel for manual entry
-                document.getElementById('optionsContent').style.display = 'block';
-                document.getElementById('optionsIcon').textContent = '\u25b2';
-            }
-        }
 
         function setMode(newMode) {
+            // Save current pool before switching
+            if (mode === 'people') {
+                peoplePool = [...pool];
+                peopleOriginalPool = [...originalPool];
+            }
+            
             mode = newMode;
             document.getElementById('peopleMode').classList.toggle('active', mode === 'people');
             document.getElementById('teamsMode').classList.toggle('active', mode === 'teams');
@@ -379,8 +342,9 @@
             if (mode === 'teams') {
                 loadTeams();
             } else {
-                pool = [];
-                originalPool = [];
+                // Restore people pool
+                pool = [...peoplePool];
+                originalPool = [...peopleOriginalPool];
                 render();
             }
         }
@@ -402,14 +366,46 @@
             }
         }
 
+        function showAlert(message) {
+            const alertDisplay = document.getElementById('alertDisplay');
+            document.getElementById('alertText').textContent = message;
+            alertDisplay.style.display = 'block';
+            alertDisplay.style.animation = 'none';
+            alertDisplay.offsetHeight;
+            alertDisplay.style.animation = 'shake 0.5s ease-out';
+        }
+
+        function hideAlert() {
+            document.getElementById('alertDisplay').style.display = 'none';
+        }
+
+        function closeModal() {
+            document.getElementById('welcomeModal').style.display = 'none';
+        }
+
+        function useTeamGenData() {
+            closeModal();
+            document.getElementById('useTeamGen').checked = true;
+            document.getElementById('manualEntry').style.display = 'none';
+            loadFromTeamGen();
+        }
+
+        function useManualEntry() {
+            closeModal();
+            document.getElementById('useTeamGen').checked = false;
+            document.getElementById('manualEntry').style.display = 'block';
+            toggleOptions();
+        }
+
         function loadFromTeamGen() {
             const saved = localStorage.getItem('eventToolsTeams');
             if (!saved) {
-                alert('No participants found in Team Generator!');
+                showAlert('No participants found in Team Generator!');
                 document.getElementById('useTeamGen').checked = false;
                 document.getElementById('manualEntry').style.display = 'block';
                 return;
             }
+            hideAlert();
             
             const teams = JSON.parse(saved);
             const allPeople = teams.flatMap(t => t.members);
@@ -429,9 +425,10 @@
         function loadTeams() {
             const saved = localStorage.getItem('eventToolsTeams');
             if (!saved) {
-                alert('No teams found! Generate teams in Team Generator first.');
+                showAlert('No teams found! Generate teams in Team Generator first.');
                 return;
             }
+            hideAlert();
             
             const teams = JSON.parse(saved);
             pool = teams.map(t => t.name);
@@ -465,7 +462,6 @@
                     // Final pick
                     const winnerIdx = Math.floor(Math.random() * pool.length);
                     const winner = pool[winnerIdx];
-                    currentWinner = winner;
                     
                     nameEl.textContent = winner;
                     display.classList.remove('spinning');
@@ -477,10 +473,6 @@
                     // Remove if option checked
                     if (document.getElementById('removeAfterPick').checked) {
                         pool.splice(winnerIdx, 1);
-                        currentWinner = null;
-                    } else {
-                        // Show remove button
-                        document.getElementById('removeBtn').style.display = 'block';
                     }
                     
                     isSpinning = false;
@@ -522,19 +514,7 @@
 
         function resetPool() {
             pool = [...originalPool];
-            currentWinner = null;
-            document.getElementById('removeBtn').style.display = 'none';
             render();
-        }
-
-        function removeCurrentPick() {
-            if (currentWinner && pool.includes(currentWinner)) {
-                const idx = pool.indexOf(currentWinner);
-                pool.splice(idx, 1);
-                currentWinner = null;
-                document.getElementById('removeBtn').style.display = 'none';
-                render();
-            }
         }
 
         function clearHistory() {

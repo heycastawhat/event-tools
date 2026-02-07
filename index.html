@@ -7,6 +7,24 @@
     <title>Event Tools</title>
 </head>
 <body>
+    <div class="hamburger-menu left">
+        <button class="hamburger-btn" onclick="toggleMenu()">&#9776;</button>
+        <div id="menuDropdown" class="sidebar-menu">
+            <button onclick="showNewEventModal()" class="sidebar-item">New Event</button>
+        </div>
+    </div>
+
+    <div id="newEventModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-title">Start New Event?</div>
+            <div class="modal-text">This will clear all teams, scores, and schedule data.</div>
+            <div class="modal-buttons">
+                <button class="btn btn-primary" onclick="confirmNewEvent()">Yes, Start Fresh</button>
+                <button class="btn btn-secondary" onclick="closeNewEventModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <div class="container flex flex-col items-center" style="justify-content: center; min-height: 100vh;">
         <h1>Event tools</h1>
         <p class="text-muted mb-4">Tools for events</p>
@@ -23,6 +41,49 @@
     </div>
 
     <script>
+
+        function toggleMenu() {
+            const menu = document.getElementById('menuDropdown');
+            if (menu.classList.contains('open')) {
+                menu.classList.remove('open');
+                document.body.style.overflow = '';
+            } else {
+                menu.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        // Close sidebar when clicking outside or on menu item
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('menuDropdown');
+            const hamburger = e.target.closest('.hamburger-menu');
+            if (!hamburger && menu.classList.contains('open')) {
+                menu.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+        });
+        // Also close sidebar when clicking a menu item
+        document.querySelectorAll('.sidebar-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('menuDropdown').classList.remove('open');
+                document.body.style.overflow = '';
+            });
+        });
+
+        function showNewEventModal() {
+            document.getElementById('newEventModal').style.display = 'flex';
+        }
+
+        function closeNewEventModal() {
+            document.getElementById('newEventModal').style.display = 'none';
+        }
+
+        function confirmNewEvent() {
+            localStorage.removeItem('eventToolsTeams');
+            localStorage.removeItem('eventToolsScoring');
+            localStorage.removeItem('eventToolsSchedule');
+            closeNewEventModal();
+        }
         function playAttention() {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             

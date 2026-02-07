@@ -19,6 +19,9 @@
                 <span id="toggleIcon" class="text-muted">▼</span>
             </div>
             <div id="addEventForm" class="flex flex-col gap-2 mt-2" style="display: none;">
+                <div id="formAlert" class="form-alert" style="display: none;">
+                    <div class="form-alert-text">Please enter a time and title</div>
+                </div>
                 <div class="flex gap-2">
                     <div style="flex: 1;">
                         <label for="eventTime">Time</label>
@@ -203,6 +206,26 @@
             border-radius: 4px;
             margin-left: 0.5rem;
         }
+        
+        .form-alert {
+            background: var(--bg-secondary);
+            border: 2px solid var(--error);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            text-align: center;
+            animation: shake 0.5s ease-out;
+        }
+        
+        .form-alert-text {
+            font-weight: 600;
+            color: var(--error);
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
     </style>
 
     <script>
@@ -230,9 +253,10 @@
             const location = document.getElementById('eventLocation').value.trim();
 
             if (!time || !title) {
-                alert('Please enter a time and title');
+                showFormAlert();
                 return;
             }
+            hideFormAlert();
 
             events.push({
                 id: Date.now(),
@@ -257,6 +281,18 @@
             const isHidden = form.style.display === 'none';
             form.style.display = isHidden ? 'flex' : 'none';
             icon.textContent = isHidden ? '▲' : '▼';
+        }
+
+        function showFormAlert() {
+            const alert = document.getElementById('formAlert');
+            alert.style.display = 'block';
+            alert.style.animation = 'none';
+            alert.offsetHeight;
+            alert.style.animation = 'shake 0.5s ease-out';
+        }
+
+        function hideFormAlert() {
+            document.getElementById('formAlert').style.display = 'none';
         }
 
         function deleteEvent(id) {

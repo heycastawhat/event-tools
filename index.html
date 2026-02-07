@@ -94,7 +94,7 @@
                 </div>
                 <div class="customize-group">
                     <div class="setting-row">
-                        <label>AI Assistant</label>
+                        <label>AI Features</label>
                         <button class="toggle-btn" id="aiToggle" onclick="toggleAI()">
                             <span class="toggle-slider"></span>
                         </button>
@@ -137,12 +137,13 @@
                 <div class="modal-title">Add Participants</div>
                 <div class="modal-text">Enter the names of everyone at your event, one per line.</div>
                 <textarea id="onboardPeople" placeholder="Alice&#10;Bob&#10;Charlie&#10;..." rows="6" style="width: 100%; resize: vertical;"></textarea>
+                <p class="text-muted text-sm" style="margin-top: 0.5rem;">Want to scan names from a photo? Enable AI Features and use Scan Names in the Team Generator.</p>
             </div>
 
             <!-- Step 2: Appearance -->
             <div class="onboard-step" data-step="2" style="display: none;">
                 <div class="modal-title">Appearance</div>
-                <div class="modal-text">Pick a look for your event.</div>
+                <div class="modal-text">Customise the look and feel.</div>
                 <div class="customize-options">
                     <div class="customize-group">
                         <label>Accent Color</label>
@@ -199,12 +200,12 @@
 
             <!-- Step 4: AI -->
             <div class="onboard-step" data-step="4" style="display: none;">
-                <div class="modal-title">AI</div>
-                <div class="modal-text">Enable an AI assistant to help brainstorm event ideas on the fly. OCR for team generation coming soon.</div>
+                <div class="modal-title">AI Features</div>
+                <div class="modal-text">Enable AI features including an event assistant chatbot and OCR name scanning in Team Generator. Powered by Hack Club AI.</div>
                 <div class="customize-options">
                     <div class="customize-group">
                         <div class="setting-row">
-                            <label>Enable AI Assistant</label>
+                            <label>Enable AI Features</label>
                             <button class="toggle-btn" id="onboardAiToggle" onclick="toggleAI()">
                                 <span class="toggle-slider"></span>
                             </button>
@@ -214,7 +215,7 @@
             </div>
 
             <div class="onboard-nav">
-                <button class="btn btn-ghost" onclick="skipOnboarding()">I'll do this later</button>
+                <div></div>
                 <div class="flex gap-2">
                     <button class="btn btn-secondary" id="onboardBack" onclick="onboardPrev()" style="display: none;">Back</button>
                     <button class="btn btn-primary" id="onboardNext" onclick="onboardNext()">Get Started</button>
@@ -235,7 +236,7 @@
             <button class="btn btn-secondary" onclick="window.location.href='schedule.html'">Schedule</button>
             <button class="btn btn-secondary" onclick="window.location.href='picker.html'">Random Picker</button>
             <button class="btn btn-secondary" onclick="window.location.href='notes.html'">Notes</button>
-            <button class="btn btn-secondary" id="aiBtn" onclick="window.location.href='ai.html'" style="display: none;">AI Assistant</button>
+            <button class="btn btn-secondary" id="aiBtn" onclick="window.location.href='ai.html'" style="display: none;">AI</button>
         </div>
         <button class="btn btn-secondary mt-4" onclick="playAttention()" style="padding: 1rem 2rem;">
             Attention

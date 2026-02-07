@@ -20,7 +20,7 @@
             </div>
             <div id="participantsContent" style="display: none;" class="mt-2">
                 <div class="flex items-center justify-between mb-2">
-                                     <button class="btn btn-ghost text-sm" onclick="event.stopPropagation(); startOCR()">Scan Names</button>
+                                     <button class="btn btn-ghost text-sm" id="scanBtn" onclick="event.stopPropagation(); startOCR()" style="display: none;">Scan Names</button>
                                      <button class="btn btn-ghost text-sm" onclick="event.stopPropagation(); toggleBulkMode()" id="bulkToggle">Bulk Add</button>
                                  </div>
                 <div id="singleMode" class="flex gap-2">
@@ -215,6 +215,10 @@
         let participants = [];
         let noGoes = [];
         let bulkMode = false;
+
+        if (localStorage.getItem('eventTools_ai') === 'true') {
+            document.getElementById('scanBtn').style.display = 'inline-block';
+        }
 
         function toggleSection(section) {
             const content = document.getElementById(section + 'Content');

@@ -5,17 +5,21 @@ export default async function handler(req, res) {
 
     const apiKey = process.env.hcai;
     if (!apiKey) {
-        return res.status(500).json({ error: 'API key not configured' });
+        return res.status(500).json({ error: 'API key not configured. Check Vercel env variable "hcai"' });
     }
 
     try {
-        const response = await fetch('https://ai.hackclub.com/chat/completions', {
+        const response = await fetch('https://ai.hackclub.com/proxy/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`
             },
-            body: JSON.stringify(req.body)
+            body: JSON.stringify({
+                model: req.body.model || 'openai/gpt-5-mini',
+                messages: req.body.messages,
+                stream: false
+            })
         });
 
         const data = await response.json();

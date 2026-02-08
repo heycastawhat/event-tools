@@ -15,6 +15,7 @@
             <button onclick="showNewEventModal()" class="sidebar-item">New Event</button>
             <button onclick="showCustomizeModal()" class="sidebar-item">Customize</button>
             <button onclick="showSettingsModal()" class="sidebar-item">Settings</button>
+            <button onclick="showSearch()" class="sidebar-item">Search</button>
         </div>
     </div>
 
@@ -94,14 +95,6 @@
                         </button>
                     </div>
                 </div>
-                <div class="customize-group">
-                    <div class="setting-row">
-                        <label>AI Features</label>
-                        <button class="toggle-btn" id="aiToggle" onclick="toggleAI()">
-                            <span class="toggle-slider"></span>
-                        </button>
-                    </div>
-                </div>
                 <div class="customize-group" style="border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 0.5rem;">
                     <label>Data</label>
                     <div class="flex gap-2 mt-2">
@@ -113,6 +106,13 @@
             <div class="modal-buttons" style="margin-top: 1.5rem;">
                 <button class="btn btn-secondary" onclick="closeSettingsModal()">Done</button>
             </div>
+        </div>
+    </div>
+
+    <div id="searchModal" class="modal-overlay" style="display: none;">
+        <div class="modal-content" style="max-width: 450px;">
+            <input type="text" id="searchInput" placeholder="Search tools and features..." oninput="filterSearch()" autofocus style="width: 100%; margin-bottom: 1rem;">
+            <div id="searchResults" class="search-results"></div>
         </div>
     </div>
 
@@ -376,7 +376,10 @@
 
         function toggleSetting(setting) {
             const key = `eventTools_${setting}`;
-            const current = localStorage.getItem(key) !== 'false';
+            const defaultOn = ['sound', 'vibration', 'confirm'];
+            const current = defaultOn.includes(setting)
+                ? localStorage.getItem(key) !== 'false'
+                : localStorage.getItem(key) === 'true';
             localStorage.setItem(key, !current);
             updateSettingsToggles();
         }
@@ -475,6 +478,78 @@
             };
             reader.readAsText(file);
             event.target.value = '';
+        }
+
+        // Search
+        const searchItems = [
+            { name: 'Team Generator', type: 'tool', action: () => window.location.href = 'teamgen.html' },
+            { name: 'Scoring', type: 'tool', action: () => window.location.href = 'scoring.html' },
+            { name: 'Timer', type: 'tool', action: () => window.location.href = 'timer.html' },
+            { name: 'Schedule', type: 'tool', action: () => window.location.href = 'schedule.html' },
+            { name: 'Random Picker', type: 'tool', action: () => window.location.href = 'picker.html' },
+            { name: 'Notes', type: 'tool', action: () => window.location.href = 'notes.html' },
+            { name: 'AI', type: 'tool', action: () => window.location.href = 'ai.html', requiresAI: true },
+            { name: 'New Event', type: 'action', action: () => { closeSearch(); showNewEventModal(); } },
+            { name: 'Customize', type: 'action', action: () => { closeSearch(); showCustomizeModal(); } },
+            
+            { name: 'Attention', type: 'action', action: () => { closeSearch(); playAttention(); } },
+            { name: 'Experimental Features', type: 'feature', action: () => { toggleSetting('experimental'); filterSearch(); }, isToggle: true, getState: () => localStorage.getItem('eventTools_experimental') === 'true' },
+            { name: 'AI Features', type: 'experimental', action: () => { toggleAI(); filterSearch(); }, isToggle: true, getState: () => localStorage.getItem('eventTools_ai') === 'true', requiresExperimental: true },
+            { name: 'OCR Name Scanning', type: 'experimental', action: () => { toggleAI(); filterSearch(); }, isToggle: true, getState: () => localStorage.getItem('eventTools_ai') === 'true', requiresExperimental: true },
+            { name: 'Sound Effects', type: 'feature', action: () => { toggleSetting('sound'); filterSearch(); }, isToggle: true, getState: () => localStorage.getItem('eventTools_sound') !== 'false' },
+            { name: 'Vibration', type: 'feature', action: () => { toggleSetting('vibration'); filterSearch(); }, isToggle: true, getState: () => localStorage.getItem('eventTools_vibration') !== 'false' },
+            { name: 'Confirm before clearing', type: 'feature', action: () => { toggleSetting('confirm'); filterSearch(); }, isToggle: true, getState: () => localStorage.getItem('eventTools_confirm') !== 'false' },
+            { name: 'Dark Theme', type: 'feature', action: () => { setTheme('dark'); filterSearch(); } },
+            { name: 'Light Theme', type: 'feature', action: () => { setTheme('light'); filterSearch(); } },
+        ];
+
+        function showSearch() {
+            document.getElementById('searchModal').style.display = 'flex';
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            input.focus();
+            filterSearch();
+        }
+
+        function closeSearch() {
+            document.getElementById('searchModal').style.display = 'none';
+        }
+
+        document.getElementById('searchModal').addEventListener('click', (e) => {
+            if (e.target.id === 'searchModal') closeSearch();
+        });
+
+        function filterSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const results = document.getElementById('searchResults');
+            const aiEnabled = localStorage.getItem('eventTools_ai') === 'true';
+
+            if (!query) {
+                results.innerHTML = '<div class="text-muted text-center" style="padding: 1rem;">Start typing to search...</div>';
+                return;
+            }
+
+            const experimentalEnabled = localStorage.getItem('eventTools_experimental') === 'true';
+            const filtered = searchItems.filter(item => {
+                if (item.requiresAI && !aiEnabled) return false;
+                if (item.requiresExperimental && !experimentalEnabled) return false;
+                return item.name.toLowerCase().includes(query);
+            });
+            results.innerHTML = filtered.map((item, i) => {
+                const typeLabel = item.type === 'tool' ? 'Tool' : item.type === 'experimental' ? 'Experimental' : item.type === 'feature' ? 'Feature' : 'Action';
+                const toggleState = item.isToggle ? `<span class="search-toggle ${item.getState() ? 'on' : ''}">${item.getState() ? 'ON' : 'OFF'}</span>` : '';
+                return `<div class="search-item" onclick="searchItems[${searchItems.indexOf(item)}].action()">
+                    <div>
+                        <div class="search-item-name">${item.name}</div>
+                        <div class="search-item-type">${typeLabel}</div>
+                    </div>
+                    ${toggleState}
+                </div>`;
+            }).join('');
+
+            if (filtered.length === 0) {
+                results.innerHTML = '<div class="text-muted text-center" style="padding: 1rem;">No results</div>';
+            }
         }
 
         // Onboarding
